@@ -1,298 +1,327 @@
-const BUILD_ID = "clean-2026-03-12";
+const curriculum = [
+  { stage: "היכרות עם הקלידים", focus: "שמות התווים הלבנים וספירת קלידים" },
+  { stage: "לומדים תווים", focus: "דו, רה, מי, פה, סול + זיהוי שמיעתי" },
+  { stage: "קצב בסיסי", focus: "נגינה בקצב יציב של רבעים וחצאים" },
+  { stage: "יד ימין", focus: "תרגילי מנגינה קצרים ביד ימין" },
+  { stage: "יד שמאל", focus: "בסיס ליווי פשוט ביד שמאל" },
+  { stage: "שתי ידיים יחד", focus: "תיאום בסיסי בין הידיים" },
+  { stage: "יצירות ראשונות", focus: "נגינת יצירות קצרות ברמת מתחילים" }
+];
 
-const NOTES = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"];
-const NOTE_META = {
-  C4: { he: "דו", y: 170, info: "דו אמצעי" },
-  D4: { he: "רה", y: 160, info: "רה מעל דו" },
-  E4: { he: "מי", y: 150, info: "מי על הקו התחתון" },
-  F4: { he: "פה", y: 140, info: "פה בין הקו 1 ל-2" },
-  G4: { he: "סול", y: 130, info: "סול על הקו השני" },
-  A4: { he: "לה", y: 120, info: "לה (440Hz)" },
-  B4: { he: "סי", y: 110, info: "סי לפני דו גבוה" },
-  C5: { he: "דו גבוה", y: 100, info: "דו באוקטבה גבוהה" }
-};
+const targets = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"];
 
-const state = {
-  mode: "tap",
-  score: 0,
-  combo: 0,
-  hits: 0,
-  stage: 1,
-  notes: [],
-  spawnMs: 0,
-  speed: 190,
-  hitY: 385,
-  lastDetected: null
-};
-
-const scoreEl = document.getElementById("score");
-const comboEl = document.getElementById("combo");
-const hitsEl = document.getElementById("hits");
-const stageEl = document.getElementById("stage");
-const feedbackEl = document.getElementById("feedback");
-const noteInfoEl = document.getElementById("noteInfo");
-const staffNoteEl = document.getElementById("staffNote");
-const staffLabelEl = document.getElementById("staffLabel");
-const ledgerEl = document.getElementById("ledger");
-const buildTagEl = document.getElementById("buildTag");
-const versionFooterEl = document.getElementById("versionFooter");
-const modeBtn = document.getElementById("toggleModeBtn");
-const noteButtonsEl = document.getElementById("noteButtons");
-
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-
+let targetIndex = 0;
+let stars = 0;
+let detectedStableNote = null;
+let stableCount = 0;
+let lastAwardedStableNote = null;
 let audioContext;
 let analyser;
 
-buildTagEl.textContent = `Build: ${BUILD_ID}`;
-versionFooterEl.textContent = `Version: ${BUILD_ID}`;
+const stageNameEl = document.getElementById("stageName");
+const starsEl = document.getElementById("stars");
+const progressBarEl = document.getElementById("progressBar");
+const lessonDescriptionEl = document.getElementById("lessonDescription");
+const curriculumListEl = document.getElementById("curriculumList");
+const targetNoteEl = document.getElementById("targetNote");
+const feedbackEl = document.getElementById("feedback");
+const targetHintEl = document.getElementById("targetHint");
 
-function setFeedback(text, kind = "") {
+function renderCurriculum() {
+  curriculumListEl.innerHTML = "";
+  curriculum.forEach((item, idx) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<strong>שלב ${idx + 1}: ${item.stage}</strong> - ${item.focus}`;
+    curriculumListEl.appendChild(li);
+  });
+}
+
+function updateLesson() {
+  const currentStage = Math.min(Math.floor(stars / 4), curriculum.length - 1);
+  stageNameEl.textContent = curriculum[currentStage].stage;
+  lessonDescriptionEl.textContent = `היום מתרגלים: ${curriculum[currentStage].focus}. המטרה: הצלחה קטנה בכל סבב!`;
+  progressBarEl.style.width = `${((currentStage + 1) / curriculum.length) * 100}%`;
+}
+
+function setFeedback(text, type = "") {
   feedbackEl.textContent = text;
-  feedbackEl.className = `feedback ${kind}`.trim();
+  feedbackEl.className = `feedback ${type}`.trim();
 }
 
-function updateStats() {
-  scoreEl.textContent = state.score;
-  comboEl.textContent = `${state.combo}🔥`;
-  hitsEl.textContent = state.hits;
-  stageEl.textContent = state.stage;
-}
-
-function updateStaff(note) {
-  const meta = NOTE_META[note];
-  noteInfoEl.textContent = `${note} = ${meta.he} (${meta.info})`;
-  staffLabelEl.textContent = `${note} / ${meta.he}`;
-  staffNoteEl.setAttribute("cy", String(meta.y));
-  const c4 = note === "C4";
-  ledgerEl.setAttribute("x1", c4 ? "186" : "0");
-  ledgerEl.setAttribute("x2", c4 ? "236" : "0");
-  ledgerEl.setAttribute("y1", c4 ? "170" : "0");
-  ledgerEl.setAttribute("y2", c4 ? "170" : "0");
-  [...noteButtonsEl.children].forEach((b, i) => b.classList.toggle("active-note", NOTES[i] === note));
-}
-
-function initButtons() {
-  noteButtonsEl.innerHTML = "";
-  NOTES.forEach((note) => {
-    const btn = document.createElement("button");
-    btn.textContent = `${NOTE_META[note].he} · ${note}`;
-    btn.addEventListener("click", () => tryPlayerHit(note, true));
-    noteButtonsEl.appendChild(btn);
-  });
-}
-
-function spawnNote() {
-  const lane = Math.floor(Math.random() * NOTES.length);
-  state.notes.push({ lane, note: NOTES[lane], y: -30, hit: false, phase: Math.random() * Math.PI * 2 });
-}
-
-function drawBackground(t) {
-  const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  g.addColorStop(0, "#0b1634");
-  g.addColorStop(1, "#203a6f");
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  const laneW = canvas.width / NOTES.length;
-  for (let i = 0; i < NOTES.length; i += 1) {
-    const a = 0.08 + 0.05 * Math.sin(t / 260 + i);
-    ctx.fillStyle = `rgba(255,255,255,${a})`;
-    ctx.fillRect(i * laneW, 0, laneW, canvas.height);
-    ctx.fillStyle = "rgba(225,236,255,.85)";
-    ctx.font = "bold 14px Rubik";
-    ctx.fillText(NOTES[i], i * laneW + 12, 22);
-  }
-
-  ctx.strokeStyle = "#ffffff";
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.moveTo(0, state.hitY);
-  ctx.lineTo(canvas.width, state.hitY);
-  ctx.stroke();
-}
-
-function drawNotes(t) {
-  const laneW = canvas.width / NOTES.length;
-  state.notes.forEach((n) => {
-    const x = n.lane * laneW + laneW / 2;
-    const r = 15;
-    const aura = 3 + Math.sin(t / 150 + n.phase) * 2;
-    ctx.fillStyle = n.hit ? "#00d68f" : "#6aa9ff";
-    ctx.beginPath();
-    ctx.arc(x, n.y, r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = n.hit ? "rgba(0,214,143,.7)" : "rgba(140,188,255,.75)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(x, n.y, r + aura, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.fillStyle = "#fff";
-    ctx.font = "12px Rubik";
-    ctx.fillText(n.note, x - 15, n.y + 28);
-  });
-}
-
-function updateGame(dt) {
-  state.spawnMs += dt;
-  const every = Math.max(560 - state.stage * 25, 260);
-  if (state.spawnMs >= every) {
-    spawnNote();
-    state.spawnMs = 0;
-  }
-
-  const speed = state.speed + state.stage * 16;
-  state.notes.forEach((n) => {
-    n.y += speed * (dt / 1000);
-  });
-
-  state.notes = state.notes.filter((n) => {
-    if (!n.hit && n.y > state.hitY + 35) {
-      state.combo = 0;
-      setFeedback(`פספוס: ${n.note}`, "bad");
-      updateStats();
-      return false;
-    }
-    return n.y < canvas.height + 60;
-  });
-
-  state.stage = Math.floor(state.hits / 10) + 1;
-}
-
-function tryHit(note) {
-  const idx = state.notes.findIndex((n) => !n.hit && n.note === note && Math.abs(n.y - state.hitY) <= 30);
-  if (idx < 0) return false;
-
-  state.notes[idx].hit = true;
-  state.score += 10 + Math.min(state.combo, 25);
-  state.combo += 1;
-  state.hits += 1;
-  updateStaff(note);
-  setFeedback(`פגיעה טובה: ${note} (${NOTE_META[note].he})`, "good");
-  updateStats();
-  setTimeout(() => {
-    state.notes = state.notes.filter((n) => n !== state.notes[idx]);
-  }, 90);
-  return true;
-}
-
-function tryPlayerHit(note, fromTap) {
-  const ok = tryHit(note);
-  if (!ok && fromTap) {
-    state.combo = 0;
-    setFeedback(`עוד רגע: ${note} עדיין לא על הקו`, "bad");
-    updateStats();
-  }
-}
-
-function autoCorrelate(buffer, sampleRate) {
-  let rms = 0;
-  for (let i = 0; i < buffer.length; i += 1) rms += buffer[i] * buffer[i];
-  rms = Math.sqrt(rms / buffer.length);
-  if (rms < 0.01) return -1;
-
-  let best = -1;
-  let bestOffset = -1;
-  for (let offset = 10; offset < 900; offset += 1) {
-    let corr = 0;
-    for (let i = 0; i < buffer.length - offset; i += 1) corr += Math.abs(buffer[i] - buffer[i + offset]);
-    corr = 1 - corr / (buffer.length - offset);
-    if (corr > best) {
-      best = corr;
-      bestOffset = offset;
-    }
-  }
-  if (best < 0.85 || bestOffset < 0) return -1;
-  return sampleRate / bestOffset;
+function noteToFrequency(note) {
+  const match = note.match(/^([A-G])(#?)(\d)$/);
+  if (!match) return null;
+  const [, letter, sharp, octaveStr] = match;
+  const semitoneMap = {
+    C: 0,
+    "C#": 1,
+    D: 2,
+    "D#": 3,
+    E: 4,
+    F: 5,
+    "F#": 6,
+    G: 7,
+    "G#": 8,
+    A: 9,
+    "A#": 10,
+    B: 11
+  };
+  const key = `${letter}${sharp}`;
+  const octave = parseInt(octaveStr, 10);
+  const midi = 12 * (octave + 1) + semitoneMap[key];
+  return 440 * Math.pow(2, (midi - 69) / 12);
 }
 
 function frequencyToNote(freq) {
   const noteNumber = 12 * (Math.log2(freq / 440)) + 69;
   const rounded = Math.round(noteNumber);
   const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-  return `${noteNames[rounded % 12]}${Math.floor(rounded / 12) - 1}`;
+  const name = noteNames[rounded % 12];
+  const octave = Math.floor(rounded / 12) - 1;
+  return `${name}${octave}`;
+}
+
+function drawStaffAndNote(note) {
+  const ctx = staffCanvas.getContext("2d");
+  const w = staffCanvas.width;
+  const h = staffCanvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const top = 60;
+  const spacing = 18;
+  ctx.strokeStyle = "#2b3a60";
+  ctx.lineWidth = 1.5;
+
+  for (let i = 0; i < 5; i += 1) {
+    const y = top + i * spacing;
+    ctx.beginPath();
+    ctx.moveTo(35, y);
+    ctx.lineTo(w - 35, y);
+    ctx.stroke();
+  }
+
+  ctx.font = "42px serif";
+  ctx.fillText("𝄞", 42, top + spacing * 3.2);
+
+  const noteYMap = {
+    C4: top + spacing * 5,
+    D4: top + spacing * 4.5,
+    E4: top + spacing * 4,
+    F4: top + spacing * 3.5,
+    G4: top + spacing * 3,
+    A4: top + spacing * 2.5,
+    B4: top + spacing * 2,
+    C5: top + spacing * 1.5
+  };
+
+  const x = 250;
+  const y = noteYMap[note] ?? top + spacing * 4;
+
+  if (note === "C4") {
+    ctx.beginPath();
+    ctx.moveTo(x - 18, top + spacing * 5);
+    ctx.lineTo(x + 18, top + spacing * 5);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = "#1f4bff";
+  ctx.beginPath();
+  ctx.ellipse(x, y, 13, 9, -0.4, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#13233d";
+  ctx.font = "bold 18px Rubik";
+  ctx.fillText(`תו לתרגול: ${note}`, 290, 34);
+}
+
+function renderMiniPiano(activeNote) {
+  miniPianoEl.innerHTML = "";
+  targets.forEach((note) => {
+    const key = document.createElement("div");
+    key.className = `piano-key ${note === activeNote ? "active" : ""}`.trim();
+    key.textContent = noteInfo[note].hebrew;
+    key.title = `${note} - ${noteInfo[note].hebrew}`;
+    key.addEventListener("click", () => setCurrentTarget(note));
+    miniPianoEl.appendChild(key);
+  });
+}
+
+function updateTeachingContent() {
+  const current = targets[targetIndex];
+  const info = noteInfo[current];
+  noteMeaningEl.textContent = `התו ${current} נקרא ${info.hebrew}. ${info.explain}`;
+  drawStaffAndNote(current);
+  renderMiniPiano(current);
+}
+
+function setCurrentTarget(note) {
+  targetIndex = targets.indexOf(note);
+  targetNoteEl.textContent = note;
+  targetHintEl.textContent = `עכשיו לומדים ומתרגלים את ${noteInfo[note].hebrew} (${note}).`;
+  updateTeachingContent();
+  setFeedback(`עברנו לתו חדש: ${note}. קודם הסתכלו על ההסבר ועל החמשה ואז נגנו.`);
+}
+
+function evaluateDetectedNote(note) {
+  const target = targets[targetIndex];
+
+  if (lastAwardedStableNote && note !== lastAwardedStableNote) {
+    lastAwardedStableNote = null;
+  }
+
+  if (lastAwardedStableNote === note && note === target) {
+    return;
+  }
+
+  if (note === detectedStableNote) {
+    stableCount += 1;
+  } else {
+    detectedStableNote = note;
+    stableCount = 1;
+  }
+
+  if (stableCount < 3) {
+    setFeedback(`שומעים: ${note}. ממשיכים להאזין לייצוב…`, "");
+    return;
+  }
+
+  if (note === target) {
+    if (lastScoredNote === note) {
+      return;
+    }
+
+    lastScoredNote = note;
+    stars += 1;
+    lastAwardedStableNote = note;
+    detectedStableNote = null;
+    stableCount = 0;
+    starsEl.textContent = `${stars} ⭐`;
+    setFeedback(`כל הכבוד! ניגנת נכון את ${target} (${noteInfo[target].hebrew}).`, "good");
+    if (stars % 2 === 0) {
+      const next = targets[(targetIndex + 1) % targets.length];
+      setCurrentTarget(next);
+      targetHintEl.textContent = "התקדמת! קודם מסתכלים בחוברת התווים, ואז מנגנים.";
+    }
+    updateLesson();
+  } else {
+    lastScoredNote = null;
+    const targetFreq = noteToFrequency(target);
+    const detectedFreq = noteToFrequency(note);
+    if (!targetFreq || !detectedFreq) {
+      setFeedback(`שומעים ${note}. בואו ננסה שוב להגיע ל-${target}.`, "warn");
+      return;
+    }
+    const direction = detectedFreq < targetFreq ? "גבוה יותר" : "נמוך יותר";
+    setFeedback(`שומעים ${note}. נסו תו ${direction} כדי להגיע ל-${target}.`, "warn");
+  }
+}
+
+function autoCorrelate(buffer, sampleRate) {
+  let rms = 0;
+  for (let i = 0; i < buffer.length; i++) rms += buffer[i] * buffer[i];
+  rms = Math.sqrt(rms / buffer.length);
+  if (rms < 0.01) return -1;
+
+  let r1 = 0;
+  let r2 = buffer.length - 1;
+  const threshold = 0.2;
+
+  for (let i = 0; i < buffer.length / 2; i++) {
+    if (Math.abs(buffer[i]) < threshold) {
+      r1 = i;
+      break;
+    }
+  }
+
+  for (let i = 1; i < buffer.length / 2; i++) {
+    if (Math.abs(buffer[buffer.length - i]) < threshold) {
+      r2 = buffer.length - i;
+      break;
+    }
+  }
+
+  const trimmed = buffer.slice(r1, r2);
+  const c = new Array(trimmed.length).fill(0);
+
+  for (let i = 0; i < trimmed.length; i++) {
+    for (let j = 0; j < trimmed.length - i; j++) c[i] += trimmed[j] * trimmed[j + i];
+  }
+
+  let d = 0;
+  while (c[d] > c[d + 1]) d += 1;
+
+  let maxval = -1;
+  let maxpos = -1;
+  for (let i = d; i < trimmed.length; i++) {
+    if (c[i] > maxval) {
+      maxval = c[i];
+      maxpos = i;
+    }
+  }
+
+  const t0 = maxpos;
+  if (t0 <= 0) return -1;
+  return sampleRate / t0;
 }
 
 async function startMicrophone() {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
+      }
+    });
+
     audioContext = new AudioContext();
     const source = audioContext.createMediaStreamSource(stream);
     analyser = audioContext.createAnalyser();
     analyser.fftSize = 2048;
     source.connect(analyser);
-    state.mode = "mic";
-    modeBtn.textContent = "מצב: מיקרופון";
-    setFeedback("מיקרופון הופעל בהצלחה", "good");
+
+    detectedStableNote = null;
+    stableCount = 0;
+    lastScoredNote = null;
+
+    setFeedback("המיקרופון פעיל! נגנו את התו שמופיע למעלה.", "good");
     detectPitch();
-  } catch (_e) {
-    setFeedback("לא הצלחנו להפעיל מיקרופון", "bad");
+  } catch (error) {
+    setFeedback("לא הצלחנו להפעיל מיקרופון. בדקו הרשאות בדפדפן.", "warn");
   }
 }
 
 function detectPitch() {
-  if (!analyser || state.mode !== "mic") return;
+  if (!analyser || !audioContext) return;
   const buffer = new Float32Array(analyser.fftSize);
+
   const tick = () => {
-    if (!analyser || state.mode !== "mic") return;
     analyser.getFloatTimeDomainData(buffer);
     const freq = autoCorrelate(buffer, audioContext.sampleRate);
-    if (freq > 50 && freq < 1500) {
+
+    if (freq !== -1 && freq > 50 && freq < 1400) {
       const note = frequencyToNote(freq);
-      if (NOTES.includes(note) && note !== state.lastDetected) {
-        state.lastDetected = note;
-        tryPlayerHit(note, false);
-      }
+      evaluateDetectedNote(note);
+    } else {
+      detectedStableNote = null;
+      stableCount = 0;
+      lastScoredNote = null;
     }
     requestAnimationFrame(tick);
   };
+
   tick();
 }
 
-function resetGame() {
-  state.score = 0;
-  state.combo = 0;
-  state.hits = 0;
-  state.stage = 1;
-  state.spawnMs = 0;
-  state.notes = [];
-  updateStats();
-  setFeedback("משחק חדש התחיל", "good");
-}
-
-function loop(now) {
-  const dt = Math.min(now - loop.last, 40);
-  loop.last = now;
-  updateGame(dt);
-  drawBackground(now);
-  drawNotes(now);
-  requestAnimationFrame(loop);
-}
-loop.last = performance.now();
-
-// Input wiring
-window.addEventListener("keydown", (e) => {
-  const map = { Digit1: 0, Digit2: 1, Digit3: 2, Digit4: 3, Digit5: 4, Digit6: 5, Digit7: 6, Digit8: 7 };
-  const i = map[e.code];
-  if (i !== undefined) tryPlayerHit(NOTES[i], true);
-});
-
-modeBtn.addEventListener("click", () => {
-  state.mode = state.mode === "tap" ? "mic" : "tap";
-  modeBtn.textContent = `מצב: ${state.mode === "tap" ? "מקלדת" : "מיקרופון"}`;
-  setFeedback(state.mode === "tap" ? "מצב מקלדת פעיל" : "מצב מיקרופון פעיל");
-  if (state.mode === "mic" && analyser) detectPitch();
-});
-
 document.getElementById("startMicBtn").addEventListener("click", startMicrophone);
-document.getElementById("resetBtn").addEventListener("click", resetGame);
+document.getElementById("nextTargetBtn").addEventListener("click", () => {
+  const next = targets[(targetIndex + 1) % targets.length];
+  setCurrentTarget(next);
+  targetIndex = (targetIndex + 1) % targets.length;
+  targetNoteEl.textContent = targets[targetIndex];
+  setFeedback(`עברנו לתו חדש: ${targets[targetIndex]}. נסו לנגן אותו!`);
+});
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((r) => r.unregister()));
-}
-
-initButtons();
-updateStaff("C4");
-updateStats();
-requestAnimationFrame(loop);
+renderCurriculum();
+updateLesson();
+setCurrentTarget("C4");
