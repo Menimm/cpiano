@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>פסנתרון HERO</title>
+    <link rel="stylesheet" href="style.css?v=hero-kids-v4" />
+  </head>
+  <body>
+    <header class="header">
+      <h1>🎹 פסנתרון HERO</h1>
+      <p>לומדים לנגן עם תווים נופלים, פידבק צבעוני ומקטעי שירים מוכרים</p>
+      <div id="buildTag" class="version-pill">Build: loading...</div>
+    </header>
+
+    <main class="layout">
+      <section class="card controls">
+        <h2>אימון</h2>
+
+        <label class="control-label" for="songSelect">בחירת מקטע שיר</label>
+        <select id="songSelect"></select>
+
+        <div class="button-row">
+          <button id="playBtn">נגן</button>
+          <button id="pauseBtn" class="secondary">עצור</button>
+          <button id="resetBtn" class="secondary">איפוס</button>
+        </div>
+
+        <div class="button-row">
+          <button id="startMicBtn" class="secondary">הפעל מיקרופון</button>
+          <button id="openSettingsBtn" class="secondary">⚙️ הגדרות</button>
+        </div>
+
+        <div class="stats">
+          <div><span>ניקוד</span><strong id="score">0</strong></div>
+          <div><span>רצף</span><strong id="combo">0🔥</strong></div>
+          <div><span>דיוק</span><strong id="accuracy">0%</strong></div>
+          <div><span>תו עכשיו</span><strong id="currentTarget">-</strong></div>
+        </div>
+
+        <p id="feedback" class="feedback">בחרו שיר ולחצו נגן. התווים ייכנסו לחלק העליון של הקליד.</p>
+      </section>
+
+      <section class="card sheet-card">
+        <h2>תצוגת תווים עם קו רץ</h2>
+        <canvas id="sheetCanvas" width="900" height="220" aria-label="חוברת תווים"></canvas>
+      </section>
+
+      <section class="card hero-card">
+        <h2>מסלול התווים</h2>
+        <canvas id="heroCanvas" width="900" height="300" aria-label="מסלול תווים"></canvas>
+      </section>
+
+      <section class="card piano-card">
+        <h2>פסנתר 61 קלידים</h2>
+        <p class="hint">התו ייכנס לראש הקליד. בכניסה הוא נהיה ירוק ואז נעלם.</p>
+        <div id="piano61" class="piano-61" aria-label="פסנתר 61 קלידים"></div>
+      </section>
+    </main>
+
+    <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="modal-content">
+        <h3 id="settingsTitle">הגדרות אימון</h3>
+
+        <label class="control-label" for="speedControl">מהירות (BPM): <strong id="speedValue">90</strong></label>
+        <input id="speedControl" type="range" min="60" max="160" step="1" value="90" />
+
+        <label class="control-label" for="hitWindowControl">חלון פגיעה (פעימות): <strong id="hitWindowValue">0.28</strong></label>
+        <input id="hitWindowControl" type="range" min="0.18" max="0.45" step="0.01" value="0.28" />
+
+        <label class="control-label" for="autoScrollToggle">
+          <input id="autoScrollToggle" type="checkbox" checked /> קו תווים רץ אוטומטית
+        </label>
+
+        <div class="button-row">
+          <button id="saveSettingsBtn">שמור</button>
+          <button id="closeSettingsBtn" class="secondary">סגור</button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <small>טיפ: אם GitHub Pages מציג גרסה ישנה, בצעו Hard Refresh.</small>
+      <div id="versionFooter" class="version-pill">Version: loading...</div>
+    </footer>
+
+    <script src="app.js?v=hero-kids-v4" type="module"></script>
+  </body>
+</html>
