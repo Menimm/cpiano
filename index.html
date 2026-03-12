@@ -3,90 +3,89 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    <title>פסנתרון HERO</title>
-    <link rel="stylesheet" href="style.css?v=hero-kids-v4" />
+    <title>פסנתרון - ללמוד לנגן מהתחלה</title>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <header class="header">
-      <h1>🎹 פסנתרון HERO</h1>
-      <p>לומדים לנגן עם תווים נופלים, פידבק צבעוני ומקטעי שירים מוכרים</p>
-      <div id="buildTag" class="version-pill">Build: loading...</div>
+    <header class="app-header">
+      <h1>🎹 פסנתרון</h1>
+      <p>לומדים פסנתר/אורגנית מאפס - בעברית ובכיף!</p>
     </header>
 
     <main class="layout">
-      <section class="card controls">
-        <h2>אימון</h2>
-
-        <label class="control-label" for="songSelect">בחירת מקטע שיר</label>
-        <select id="songSelect"></select>
-
-        <div class="button-row">
-          <button id="playBtn">נגן</button>
-          <button id="pauseBtn" class="secondary">עצור</button>
-          <button id="resetBtn" class="secondary">איפוס</button>
+      <section class="card progress-card">
+        <h2>ההתקדמות שלי</h2>
+        <div class="progress-row">
+          <span>שלב נוכחי:</span>
+          <strong id="stageName">היכרות עם הקלידים</strong>
         </div>
-
-        <div class="button-row">
-          <button id="startMicBtn" class="secondary">הפעל מיקרופון</button>
-          <button id="openSettingsBtn" class="secondary">⚙️ הגדרות</button>
+        <div class="progress-row">
+          <span>כוכבים:</span>
+          <strong id="stars">0 ⭐</strong>
         </div>
-
-        <div class="stats">
-          <div><span>ניקוד</span><strong id="score">0</strong></div>
-          <div><span>רצף</span><strong id="combo">0🔥</strong></div>
-          <div><span>דיוק</span><strong id="accuracy">0%</strong></div>
-          <div><span>תו עכשיו</span><strong id="currentTarget">-</strong></div>
+        <div class="progress-row">
+          <span>רצף יומי:</span>
+          <strong id="streak">1 🔥</strong>
         </div>
-
-        <p id="feedback" class="feedback">בחרו שיר ולחצו נגן. התווים ייכנסו לחלק העליון של הקליד.</p>
+        <div class="progress">
+          <div id="progressBar" class="progress-bar"></div>
+        </div>
       </section>
 
-      <section class="card sheet-card">
-        <h2>תצוגת תווים עם קו רץ</h2>
-        <canvas id="sheetCanvas" width="900" height="220" aria-label="חוברת תווים"></canvas>
+      <section class="card lesson-card">
+        <h2>השיעור של היום (5-8 דקות)</h2>
+        <p id="lessonDescription"></p>
+        <div class="actions">
+          <button id="startMicBtn">הפעלת מיקרופון</button>
+          <button id="nextTargetBtn" class="secondary">תו הבא</button>
+        </div>
+
+        <div class="target-box">
+          <p>🎯 התו לתרגול:</p>
+          <div id="targetNote" class="note">C4</div>
+          <p id="targetHint" class="hint">נגנו עכשיו את התו באורגנית.</p>
+        </div>
+
+        <div class="feedback" id="feedback">מחכים להפעלת מיקרופון…</div>
       </section>
 
-      <section class="card hero-card">
-        <h2>מסלול התווים</h2>
-        <canvas id="heroCanvas" width="900" height="300" aria-label="מסלול תווים"></canvas>
+      <section class="card explain-card">
+        <h2>לפני תרגול - קודם מבינים 🎓</h2>
+        <p id="noteMeaning"></p>
+        <div class="note-legend">
+          <span><strong>אות:</strong> שם התו באנגלית (A-G)</span>
+          <span><strong>מספר:</strong> האוקטבה (גובה הצליל)</span>
+          <span><strong>דו אמצעי:</strong> הוא C4</span>
+        </div>
+        <div class="mini-piano" id="miniPiano" aria-label="המחשת קלידים"></div>
       </section>
 
-      <section class="card piano-card">
-        <h2>פסנתר 61 קלידים</h2>
-        <p class="hint">התו ייכנס לראש הקליד. בכניסה הוא נהיה ירוק ואז נעלם.</p>
-        <div id="piano61" class="piano-61" aria-label="פסנתר 61 קלידים"></div>
+      <section class="card staff-card">
+        <h2>כך זה נראה בחוברת תווים</h2>
+        <p>הנקודה השחורה היא התו שאתם מתרגלים עכשיו.</p>
+        <canvas id="staffCanvas" width="420" height="220" aria-label="חמשה עם תו"></canvas>
+      </section>
+
+      <section class="card curriculum-card">
+        <h2>מסלול לימוד מדורג</h2>
+        <ol id="curriculumList"></ol>
+      </section>
+
+      <section class="card principles-card">
+        <h2>מה מיוחד כאן?</h2>
+        <ul>
+          <li>✅ קודם לומדים מושג, אחר כך מתרגלים אותו.</li>
+          <li>✅ משוב מיידי בזמן אמת על התו שנוגן.</li>
+          <li>✅ שיעורים קצרים וברורים שמתאימים לילדים בני 9.</li>
+          <li>✅ גיימיפיקציה עדינה: כוכבים, רצף יומי והצלחות קטנות.</li>
+        </ul>
       </section>
     </main>
 
-    <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-      <div class="modal-content">
-        <h3 id="settingsTitle">הגדרות אימון</h3>
-
-        <label class="control-label" for="speedControl">מהירות (BPM): <strong id="speedValue">90</strong></label>
-        <input id="speedControl" type="range" min="60" max="160" step="1" value="90" />
-
-        <label class="control-label" for="hitWindowControl">חלון פגיעה (פעימות): <strong id="hitWindowValue">0.28</strong></label>
-        <input id="hitWindowControl" type="range" min="0.18" max="0.45" step="0.01" value="0.28" />
-
-        <label class="control-label" for="autoScrollToggle">
-          <input id="autoScrollToggle" type="checkbox" checked /> קו תווים רץ אוטומטית
-        </label>
-
-        <div class="button-row">
-          <button id="saveSettingsBtn">שמור</button>
-          <button id="closeSettingsBtn" class="secondary">סגור</button>
-        </div>
-      </div>
-    </div>
-
-    <footer class="footer">
-      <small>טיפ: אם GitHub Pages מציג גרסה ישנה, בצעו Hard Refresh.</small>
-      <div id="versionFooter" class="version-pill">Version: loading...</div>
+    <footer class="app-footer">
+      <small>טיפ: התחילו בעוצמת קול בינונית ושבו קרוב לאורגנית לזיהוי מדויק יותר.</small>
     </footer>
 
-    <script src="app.js?v=hero-kids-v4" type="module"></script>
+    <script src="app.js" type="module"></script>
   </body>
 </html>
