@@ -3,67 +3,89 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    <title>פסנתרון HERO - ללמוד פסנתר בחוויה</title>
-    <link rel="stylesheet" href="style.css?v=hero-2026-03-12" />
+    <title>פסנתרון - ללמוד לנגן מהתחלה</title>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <header class="hero-header">
-      <h1>🎹 פסנתרון HERO</h1>
-      <p>לומדים תווים דרך משחק נע, צבעוני ואינטראקטיבי בסגנון Guitar Hero</p>
-      <div id="buildTag" class="build-tag">Build: loading...</div>
+    <header class="app-header">
+      <h1>🎹 פסנתרון</h1>
+      <p>לומדים פסנתר/אורגנית מאפס - בעברית ובכיף!</p>
     </header>
 
-    <main class="container">
-      <section class="panel stats">
-        <h2>המשחק שלי</h2>
-        <div class="stat-grid">
-          <div><span>ניקוד</span><strong id="score">0</strong></div>
-          <div><span>רצף</span><strong id="combo">0🔥</strong></div>
-          <div><span>פגיעות</span><strong id="hits">0</strong></div>
-          <div><span>שלב</span><strong id="stage">1</strong></div>
+    <main class="layout">
+      <section class="card progress-card">
+        <h2>ההתקדמות שלי</h2>
+        <div class="progress-row">
+          <span>שלב נוכחי:</span>
+          <strong id="stageName">היכרות עם הקלידים</strong>
         </div>
+        <div class="progress-row">
+          <span>כוכבים:</span>
+          <strong id="stars">0 ⭐</strong>
+        </div>
+        <div class="progress-row">
+          <span>רצף יומי:</span>
+          <strong id="streak">1 🔥</strong>
+        </div>
+        <div class="progress">
+          <div id="progressBar" class="progress-bar"></div>
+        </div>
+      </section>
+
+      <section class="card lesson-card">
+        <h2>השיעור של היום (5-8 דקות)</h2>
+        <p id="lessonDescription"></p>
         <div class="actions">
-          <button id="startGameBtn">התחל משחק חדש</button>
-          <button id="startMicBtn" class="secondary">הפעל מיקרופון</button>
-          <button id="toggleModeBtn" class="secondary">מצב: מקלדת</button>
+          <button id="startMicBtn">הפעלת מיקרופון</button>
+          <button id="nextTargetBtn" class="secondary">תו הבא</button>
         </div>
-        <p id="feedback" class="feedback">הדמו כבר רץ! אפשר לפגוע עם מקשים 1-8 או לעבור למיקרופון.</p>
+
+        <div class="target-box">
+          <p>🎯 התו לתרגול:</p>
+          <div id="targetNote" class="note">C4</div>
+          <p id="targetHint" class="hint">נגנו עכשיו את התו באורגנית.</p>
+        </div>
+
+        <div class="feedback" id="feedback">מחכים להפעלת מיקרופון…</div>
       </section>
 
-      <section class="panel learning">
-        <h2>כך נראה בחוברת התווים</h2>
-        <p id="noteMeaning">C4 = דו אמצעי (Middle C).</p>
-        <svg id="staffSvg" viewBox="0 0 420 220" aria-label="חמשה עם תו">
-          <rect x="0" y="0" width="420" height="220" fill="#fff" />
-          <g stroke="#263a66" stroke-width="2">
-            <line x1="20" y1="70" x2="400" y2="70" />
-            <line x1="20" y1="90" x2="400" y2="90" />
-            <line x1="20" y1="110" x2="400" y2="110" />
-            <line x1="20" y1="130" x2="400" y2="130" />
-            <line x1="20" y1="150" x2="400" y2="150" />
-          </g>
-          <text x="30" y="133" font-size="48" fill="#132d5f">𝄞</text>
-          <line id="ledger" x1="186" y1="170" x2="236" y2="170" stroke="#263a66" stroke-width="2" />
-          <ellipse id="staffNote" cx="211" cy="170" rx="14" ry="10" fill="#2d6dff" transform="rotate(-22 211 170)" />
-          <text id="staffLabel" x="255" y="46" font-size="20" fill="#0e1f3f">C4 / דו</text>
-        </svg>
-        <div class="note-keys" id="noteKeys"></div>
+      <section class="card explain-card">
+        <h2>לפני תרגול - קודם מבינים 🎓</h2>
+        <p id="noteMeaning"></p>
+        <div class="note-legend">
+          <span><strong>אות:</strong> שם התו באנגלית (A-G)</span>
+          <span><strong>מספר:</strong> האוקטבה (גובה הצליל)</span>
+          <span><strong>דו אמצעי:</strong> הוא C4</span>
+        </div>
+        <div class="mini-piano" id="miniPiano" aria-label="המחשת קלידים"></div>
       </section>
 
-      <section class="panel game">
-        <h2>Guitar Hero לפסנתר</h2>
-        <p>פגעו בתו כשהוא מגיע לאזור הפגיעה. ככל שהרצף גבוה יותר - הניקוד מזנק.</p>
-        <canvas id="gameCanvas" width="840" height="460"></canvas>
+      <section class="card staff-card">
+        <h2>כך זה נראה בחוברת תווים</h2>
+        <p>הנקודה השחורה היא התו שאתם מתרגלים עכשיו.</p>
+        <canvas id="staffCanvas" width="420" height="220" aria-label="חמשה עם תו"></canvas>
+      </section>
+
+      <section class="card curriculum-card">
+        <h2>מסלול לימוד מדורג</h2>
+        <ol id="curriculumList"></ol>
+      </section>
+
+      <section class="card principles-card">
+        <h2>מה מיוחד כאן?</h2>
+        <ul>
+          <li>✅ קודם לומדים מושג, אחר כך מתרגלים אותו.</li>
+          <li>✅ משוב מיידי בזמן אמת על התו שנוגן.</li>
+          <li>✅ שיעורים קצרים וברורים שמתאימים לילדים בני 9.</li>
+          <li>✅ גיימיפיקציה עדינה: כוכבים, רצף יומי והצלחות קטנות.</li>
+        </ul>
       </section>
     </main>
 
-    <footer class="hero-footer">
-      <small>טיפ: במצב מיקרופון, נגנו קרוב למיקרופון לקבלת זיהוי מדויק יותר.</small>
+    <footer class="app-footer">
+      <small>טיפ: התחילו בעוצמת קול בינונית ושבו קרוב לאורגנית לזיהוי מדויק יותר.</small>
     </footer>
 
-    <script src="app.js?v=hero-2026-03-12" type="module"></script>
+    <script src="app.js" type="module"></script>
   </body>
 </html>
