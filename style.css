@@ -1,0 +1,118 @@
+:root {
+  --bg: #0a1120;
+  --panel: #121f3a;
+  --text: #eef4ff;
+  --muted: #b7caee;
+  --primary: #4f83ff;
+  --ok: #00d68f;
+  --bad: #ff7373;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Rubik, Arial, sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at 25% -10%, #274887 0%, #111f39 38%, var(--bg) 72%);
+}
+
+.header, .footer { text-align: center; padding: 1rem; }
+.header p { color: var(--muted); margin: .2rem 0; }
+.version-pill, .footer-version {
+  display: inline-block;
+  margin-top: .4rem;
+  padding: .2rem .6rem;
+  border: 1px solid #4a6eaf;
+  border-radius: 999px;
+  font-size: .8rem;
+  color: #d6e5ff;
+}
+
+.layout {
+  width: min(1220px, 94%);
+  margin: 0 auto 1.4rem;
+  display: grid;
+  grid-template-columns: 330px 330px 1fr;
+  gap: 1rem;
+}
+
+.card {
+  background: linear-gradient(180deg, var(--panel), #1a2b4e);
+  border: 1px solid #2b4574;
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 14px 32px rgba(0,0,0,.35);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .5rem;
+  margin-bottom: .7rem;
+}
+.stats div {
+  background: #0d1a31;
+  border: 1px solid #25406d;
+  border-radius: 10px;
+  padding: .5rem;
+}
+.stats span { font-size: .85rem; color: var(--muted); display:block; }
+.stats strong { font-size: 1.3rem; }
+
+button {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: .75rem;
+  margin-top: .5rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--primary);
+  cursor: pointer;
+}
+button.secondary { background: #2d477b; }
+button.active-note { background: #214fae; }
+
+.feedback {
+  margin-top: .7rem;
+  min-height: 48px;
+  border: 1px solid #27406d;
+  border-radius: 10px;
+  padding: .65rem;
+  background: #0d1a30;
+}
+.feedback.good { border-color: var(--ok); color: #9df5d7; }
+.feedback.bad { border-color: var(--bad); color: #ffc2c2; }
+
+#staff {
+  width: 100%;
+  border: 1px solid #ccd9f7;
+  border-radius: 12px;
+  overflow: hidden;
+}
+#noteInfo { color: var(--muted); }
+
+.note-buttons {
+  margin-top: .6rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .4rem;
+}
+.note-buttons button {
+  margin-top: 0;
+  padding: .5rem .3rem;
+  font-size: .85rem;
+  background: #203a6a;
+  border: 1px solid #4467ad;
+}
+
+#gameCanvas {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid #3a5ea0;
+  background: #0a1327;
+}
+
+@media (max-width: 1080px) {
+  .layout { grid-template-columns: 1fr; }
+}
