@@ -30,10 +30,10 @@ body {
 }
 
 .layout {
-  width: min(1000px, 92%);
+  width: min(1080px, 92%);
   margin: 0 auto 1.5rem;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
 }
 
@@ -126,8 +126,54 @@ button.secondary {
   margin-bottom: 0.5rem;
 }
 
+.note-legend {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0.8rem 0;
+  background: #f8faff;
+  border-radius: 12px;
+  padding: 0.7rem;
+  font-size: 0.95rem;
+}
+
+.mini-piano {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 0.25rem;
+}
+
+.piano-key {
+  height: 70px;
+  border: 1px solid #b7c5e8;
+  border-radius: 8px;
+  background: #ffffff;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  padding-bottom: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.piano-key.active {
+  background: #dce6ff;
+  border-color: #4d78ff;
+  font-weight: 700;
+}
+
+.staff-card canvas {
+  width: 100%;
+  height: auto;
+  background: #fcfdff;
+  border: 1px solid #dce5ff;
+  border-radius: 12px;
+}
+
 @media (max-width: 600px) {
   button {
     width: 100%;
+  }
+
+  .mini-piano {
+    grid-template-columns: repeat(4, 1fr);
   }
 }

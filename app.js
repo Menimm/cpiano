@@ -80,6 +80,123 @@ function frequencyToNote(freq) {
   return `${name}${octave}`;
 }
 
+function drawStaffAndNote(note) {
+  const ctx = staffCanvas.getContext("2d");
+  const w = staffCanvas.width;
+  const h = staffCanvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const top = 60;
+  const spacing = 18;
+  ctx.strokeStyle = "#2b3a60";
+  ctx.lineWidth = 1.5;
+
+  for (let i = 0; i < 5; i += 1) {
+    const y = top + i * spacing;
+    ctx.beginPath();
+    ctx.moveTo(35, y);
+    ctx.lineTo(w - 35, y);
+    ctx.stroke();
+  }
+
+  ctx.font = "42px serif";
+  ctx.fillText("𝄞", 42, top + spacing * 3.2);
+
+  const noteYMap = {
+    C4: top + spacing * 5,
+    D4: top + spacing * 4.5,
+    E4: top + spacing * 4,
+    F4: top + spacing * 3.5,
+    G4: top + spacing * 3,
+    A4: top + spacing * 2.5,
+    B4: top + spacing * 2,
+    C5: top + spacing * 1.5
+  };
+
+  const x = 250;
+  const y = noteYMap[note] ?? top + spacing * 4;
+
+  if (note === "C4") {
+    ctx.beginPath();
+    ctx.moveTo(x - 18, top + spacing * 5);
+    ctx.lineTo(x + 18, top + spacing * 5);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = "#1f4bff";
+  ctx.beginPath();
+  ctx.ellipse(x, y, 13, 9, -0.4, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#13233d";
+  ctx.font = "bold 18px Rubik";
+  ctx.fillText(`תו לתרגול: ${note}`, 290, 34);
+}
+
+function renderMiniPiano(activeNote) {
+  miniPianoEl.innerHTML = "";
+  targets.forEach((note) => {
+    const key = document.createElement("div");
+    key.className = `piano-key ${note === activeNote ? "active" : ""}`.trim();
+    key.textContent = noteInfo[note].hebrew;
+    key.title = `${note} - ${noteInfo[note].hebrew}`;
+    key.addEventListener("click", () => setCurrentTarget(note));
+    miniPianoEl.appendChild(key);
+  });
+}
+
+function updateTeachingContent() {
+  const current = targets[targetIndex];
+  const info = noteInfo[current];
+  noteMeaningEl.textContent = `התו ${current} נקרא ${info.hebrew}. ${info.explain}`;
+  drawStaffAndNote(current);
+  renderMiniPiano(current);
+}
+
+function setCurrentTarget(note) {
+  targetIndex = targets.indexOf(note);
+  targetNoteEl.textContent = note;
+  targetHintEl.textContent = `עכשיו לומדים ומתרגלים את ${noteInfo[note].hebrew} (${note}).`;
+  updateTeachingContent();
+  setFeedback(`עברנו לתו חדש: ${note}. קודם הסתכלו על ההסבר ועל החמשה ואז נגנו.`);
+}
+
+function evaluateDetectedNote(note) {
+  const target = targets[targetIndex];
+  if (note === detectedStableNote) {
+    stableCount += 1;
+  } else {
+    detectedStableNote = note;
+    stableCount = 1;
+  }
+
+  if (stableCount < 3) {
+    setFeedback(`שומעים: ${note}. ממשיכים להאזין לייצוב…`, "");
+    return;
+  }
+
+  if (note === target) {
+    stars += 1;
+    starsEl.textContent = `${stars} ⭐`;
+    setFeedback(`כל הכבוד! ניגנת נכון את ${target} (${noteInfo[target].hebrew}).`, "good");
+    if (stars % 2 === 0) {
+      const next = targets[(targetIndex + 1) % targets.length];
+      setCurrentTarget(next);
+      targetHintEl.textContent = "התקדמת! קודם מסתכלים בחוברת התווים, ואז מנגנים.";
+    }
+    updateLesson();
+  } else {
+    const targetFreq = noteToFrequency(target);
+    const detectedFreq = noteToFrequency(note);
+    if (!targetFreq || !detectedFreq) {
+      setFeedback(`שומעים ${note}. בואו ננסה שוב להגיע ל-${target}.`, "warn");
+      return;
+    }
+    const direction = detectedFreq < targetFreq ? "גבוה יותר" : "נמוך יותר";
+    setFeedback(`שומעים ${note}. נסו תו ${direction} כדי להגיע ל-${target}.`, "warn");
+  }
+}
+
 function autoCorrelate(buffer, sampleRate) {
   let rms = 0;
   for (let i = 0; i < buffer.length; i++) rms += buffer[i] * buffer[i];
@@ -112,7 +229,7 @@ function autoCorrelate(buffer, sampleRate) {
   }
 
   let d = 0;
-  while (c[d] > c[d + 1]) d++;
+  while (c[d] > c[d + 1]) d += 1;
 
   let maxval = -1;
   let maxpos = -1;
@@ -126,38 +243,6 @@ function autoCorrelate(buffer, sampleRate) {
   const t0 = maxpos;
   if (t0 <= 0) return -1;
   return sampleRate / t0;
-}
-
-function evaluateDetectedNote(note) {
-  const target = targets[targetIndex];
-  if (note === detectedStableNote) {
-    stableCount += 1;
-  } else {
-    detectedStableNote = note;
-    stableCount = 1;
-  }
-
-  if (stableCount < 3) {
-    setFeedback(`שומעים: ${note}. ממשיכים להאזין לייצוב…`, "");
-    return;
-  }
-
-  if (note === target) {
-    stars += 1;
-    starsEl.textContent = `${stars} ⭐`;
-    setFeedback(`כל הכבוד! ניגנת נכון את ${target}.`, "good");
-    if (stars % 2 === 0) {
-      targetIndex = (targetIndex + 1) % targets.length;
-      targetNoteEl.textContent = targets[targetIndex];
-      targetHintEl.textContent = "התקדמת! בואו ננסה את התו הבא.";
-    }
-    updateLesson();
-  } else {
-    const targetFreq = noteToFrequency(target);
-    const detectedFreq = noteToFrequency(note);
-    const direction = detectedFreq < targetFreq ? "גבוה יותר" : "נמוך יותר";
-    setFeedback(`שומעים ${note}. נסו תו ${direction} כדי להגיע ל-${target}.`, "warn");
-  }
 }
 
 async function startMicrophone() {
@@ -203,6 +288,8 @@ function detectPitch() {
 
 document.getElementById("startMicBtn").addEventListener("click", startMicrophone);
 document.getElementById("nextTargetBtn").addEventListener("click", () => {
+  const next = targets[(targetIndex + 1) % targets.length];
+  setCurrentTarget(next);
   targetIndex = (targetIndex + 1) % targets.length;
   targetNoteEl.textContent = targets[targetIndex];
   setFeedback(`עברנו לתו חדש: ${targets[targetIndex]}. נסו לנגן אותו!`);
@@ -210,3 +297,4 @@ document.getElementById("nextTargetBtn").addEventListener("click", () => {
 
 renderCurriculum();
 updateLesson();
+setCurrentTarget("C4");
