@@ -186,6 +186,11 @@ function evaluateDetectedNote(note) {
   }
 
   if (note === target) {
+    if (lastScoredNote === note) {
+      return;
+    }
+
+    lastScoredNote = note;
     stars += 1;
     lastAwardedStableNote = note;
     detectedStableNote = null;
@@ -199,6 +204,7 @@ function evaluateDetectedNote(note) {
     }
     updateLesson();
   } else {
+    lastScoredNote = null;
     const targetFreq = noteToFrequency(target);
     const detectedFreq = noteToFrequency(note);
     if (!targetFreq || !detectedFreq) {
@@ -274,6 +280,10 @@ async function startMicrophone() {
     analyser.fftSize = 2048;
     source.connect(analyser);
 
+    detectedStableNote = null;
+    stableCount = 0;
+    lastScoredNote = null;
+
     setFeedback("המיקרופון פעיל! נגנו את התו שמופיע למעלה.", "good");
     detectPitch();
   } catch (error) {
@@ -292,6 +302,10 @@ function detectPitch() {
     if (freq !== -1 && freq > 50 && freq < 1400) {
       const note = frequencyToNote(freq);
       evaluateDetectedNote(note);
+    } else {
+      detectedStableNote = null;
+      stableCount = 0;
+      lastScoredNote = null;
     }
     requestAnimationFrame(tick);
   };
