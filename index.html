@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>פסנתרון - ללמוד לנגן מהתחלה</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>🎹 פסנתרון</h1>
+      <p>לומדים פסנתר/אורגנית מאפס - בעברית ובכיף!</p>
+    </header>
+
+    <main class="layout">
+      <section class="card progress-card">
+        <h2>ההתקדמות שלי</h2>
+        <div class="progress-row">
+          <span>שלב נוכחי:</span>
+          <strong id="stageName">היכרות עם הקלידים</strong>
+        </div>
+        <div class="progress-row">
+          <span>כוכבים:</span>
+          <strong id="stars">0 ⭐</strong>
+        </div>
+        <div class="progress-row">
+          <span>רצף יומי:</span>
+          <strong id="streak">1 🔥</strong>
+        </div>
+        <div class="progress">
+          <div id="progressBar" class="progress-bar"></div>
+        </div>
+      </section>
+
+      <section class="card lesson-card">
+        <h2>השיעור של היום (5-8 דקות)</h2>
+        <p id="lessonDescription"></p>
+        <div class="actions">
+          <button id="startMicBtn">הפעלת מיקרופון</button>
+          <button id="nextTargetBtn" class="secondary">תו הבא</button>
+        </div>
+
+        <div class="target-box">
+          <p>🎯 התו לתרגול:</p>
+          <div id="targetNote" class="note">C4</div>
+          <p id="targetHint" class="hint">נגנו עכשיו את התו באורגנית.</p>
+        </div>
+
+        <div class="feedback" id="feedback">מחכים להפעלת מיקרופון…</div>
+      </section>
+
+      <section class="card curriculum-card">
+        <h2>מסלול לימוד מדורג</h2>
+        <ol id="curriculumList"></ol>
+      </section>
+
+      <section class="card principles-card">
+        <h2>מה מיוחד כאן?</h2>
+        <ul>
+          <li>✅ משוב מיידי בזמן אמת על התו שנוגן (כמו באפליקציות מובילות).</li>
+          <li>✅ שיעורים קצרים וברורים שמתאימים לילדים בני 9.</li>
+          <li>✅ גיימיפיקציה עדינה: כוכבים, רצף יומי והצלחות קטנות.</li>
+          <li>✅ ממשק בעברית פשוטה, כפתורים גדולים ונוחים.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <small>טיפ: התחילו בעוצמת קול בינונית ושבו קרוב לאורגנית לזיהוי מדויק יותר.</small>
+    </footer>
+
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
