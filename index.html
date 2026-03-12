@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>פסנתרון HERO - ללמוד פסנתר בחוויה</title>
+    <link rel="stylesheet" href="style.css?v=hero-2026-03-12b" />
+  </head>
+  <body>
+    <header class="hero-header">
+      <h1>🎹 פסנתרון HERO</h1>
+      <p>לומדים תווים דרך משחק נע, צבעוני ואינטראקטיבי בסגנון Guitar Hero</p>
+      <div id="buildTag" class="build-tag">Build: loading...</div>
+    </header>
+
+    <main class="container">
+      <section class="panel stats">
+        <h2>המשחק שלי</h2>
+        <div class="stat-grid">
+          <div><span>ניקוד</span><strong id="score">0</strong></div>
+          <div><span>רצף</span><strong id="combo">0🔥</strong></div>
+          <div><span>פגיעות</span><strong id="hits">0</strong></div>
+          <div><span>שלב</span><strong id="stage">1</strong></div>
+        </div>
+        <div class="actions">
+          <button id="startGameBtn">התחל משחק חדש</button>
+          <button id="startMicBtn" class="secondary">הפעל מיקרופון</button>
+          <button id="toggleModeBtn" class="secondary">מצב: מקלדת</button>
+        </div>
+        <p id="feedback" class="feedback">הדמו כבר רץ! אפשר לפגוע עם מקשים 1-8 או לעבור למיקרופון.</p>
+      </section>
+
+      <section class="panel learning">
+        <h2>כך נראה בחוברת התווים</h2>
+        <p id="noteMeaning">C4 = דו אמצעי (Middle C).</p>
+        <svg id="staffSvg" viewBox="0 0 420 220" aria-label="חמשה עם תו">
+          <rect x="0" y="0" width="420" height="220" fill="#fff" />
+          <g stroke="#263a66" stroke-width="2">
+            <line x1="20" y1="70" x2="400" y2="70" />
+            <line x1="20" y1="90" x2="400" y2="90" />
+            <line x1="20" y1="110" x2="400" y2="110" />
+            <line x1="20" y1="130" x2="400" y2="130" />
+            <line x1="20" y1="150" x2="400" y2="150" />
+          </g>
+          <text x="30" y="133" font-size="48" fill="#132d5f">𝄞</text>
+          <line id="ledger" x1="186" y1="170" x2="236" y2="170" stroke="#263a66" stroke-width="2" />
+          <ellipse id="staffNote" cx="211" cy="170" rx="14" ry="10" fill="#2d6dff" transform="rotate(-22 211 170)" />
+          <text id="staffLabel" x="255" y="46" font-size="20" fill="#0e1f3f">C4 / דו</text>
+        </svg>
+        <div class="note-keys" id="noteKeys"></div>
+      </section>
+
+      <section class="panel game">
+        <h2>Guitar Hero לפסנתר</h2>
+        <p>פגעו בתו כשהוא מגיע לאזור הפגיעה. ככל שהרצף גבוה יותר - הניקוד מזנק.</p>
+        <canvas id="gameCanvas" width="840" height="460"></canvas>
+      </section>
+    </main>
+
+    <footer class="hero-footer">
+      <small>טיפ: במצב מיקרופון, נגנו קרוב למיקרופון לקבלת זיהוי מדויק יותר.</small>
+      <div id="versionFooter" class="version-footer">Version: loading...</div>
+    </footer>
+
+    <script src="app.js?v=hero-2026-03-12b" type="module"></script>
+  </body>
+</html>
