@@ -8,18 +8,7 @@ const curriculum = [
   { stage: "יצירות ראשונות", focus: "נגינת יצירות קצרות ברמת מתחילים" }
 ];
 
-const noteInfo = {
-  C4: { hebrew: "דו", explain: "C4 הוא דו אמצעי - נקודת התחלה מעולה למתחילים." },
-  D4: { hebrew: "רה", explain: "D4 הוא רה, צעד אחד מעל דו." },
-  E4: { hebrew: "מי", explain: "E4 הוא מי, הצליל השלישי ברצף דו-רה-מי." },
-  F4: { hebrew: "פה", explain: "F4 הוא פה, ממשיכים לעלות בסולם." },
-  G4: { hebrew: "סול", explain: "G4 הוא סול, תו מרכזי במנגינות בסיסיות." },
-  A4: { hebrew: "לה", explain: "A4 הוא לה. שימו לב: זה התו שמכוונים אליו 440Hz." },
-  B4: { hebrew: "סי", explain: "B4 הוא סי, רגע לפני חזרה לדו גבוה יותר." },
-  C5: { hebrew: "דו גבוה", explain: "C5 הוא דו גבוה - אותו שם תו, אוקטבה מעל C4." }
-};
-
-const targets = Object.keys(noteInfo);
+const targets = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"];
 
 let targetIndex = 0;
 let stars = 0;
@@ -36,9 +25,6 @@ const curriculumListEl = document.getElementById("curriculumList");
 const targetNoteEl = document.getElementById("targetNote");
 const feedbackEl = document.getElementById("feedback");
 const targetHintEl = document.getElementById("targetHint");
-const noteMeaningEl = document.getElementById("noteMeaning");
-const miniPianoEl = document.getElementById("miniPiano");
-const staffCanvas = document.getElementById("staffCanvas");
 
 function renderCurriculum() {
   curriculumListEl.innerHTML = "";
@@ -237,6 +223,7 @@ function autoCorrelate(buffer, sampleRate) {
 
   const trimmed = buffer.slice(r1, r2);
   const c = new Array(trimmed.length).fill(0);
+
   for (let i = 0; i < trimmed.length; i++) {
     for (let j = 0; j < trimmed.length - i; j++) c[i] += trimmed[j] * trimmed[j + i];
   }
@@ -303,6 +290,9 @@ document.getElementById("startMicBtn").addEventListener("click", startMicrophone
 document.getElementById("nextTargetBtn").addEventListener("click", () => {
   const next = targets[(targetIndex + 1) % targets.length];
   setCurrentTarget(next);
+  targetIndex = (targetIndex + 1) % targets.length;
+  targetNoteEl.textContent = targets[targetIndex];
+  setFeedback(`עברנו לתו חדש: ${targets[targetIndex]}. נסו לנגן אותו!`);
 });
 
 renderCurriculum();
