@@ -14,7 +14,7 @@ let targetIndex = 0;
 let stars = 0;
 let detectedStableNote = null;
 let stableCount = 0;
-let lastScoredNote = null;
+let lastAwardedStableNote = null;
 let audioContext;
 let analyser;
 
@@ -164,6 +164,15 @@ function setCurrentTarget(note) {
 
 function evaluateDetectedNote(note) {
   const target = targets[targetIndex];
+
+  if (lastAwardedStableNote && note !== lastAwardedStableNote) {
+    lastAwardedStableNote = null;
+  }
+
+  if (lastAwardedStableNote === note && note === target) {
+    return;
+  }
+
   if (note === detectedStableNote) {
     stableCount += 1;
   } else {
@@ -183,6 +192,9 @@ function evaluateDetectedNote(note) {
 
     lastScoredNote = note;
     stars += 1;
+    lastAwardedStableNote = note;
+    detectedStableNote = null;
+    stableCount = 0;
     starsEl.textContent = `${stars} ⭐`;
     setFeedback(`כל הכבוד! ניגנת נכון את ${target} (${noteInfo[target].hebrew}).`, "good");
     if (stars % 2 === 0) {
